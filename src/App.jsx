@@ -11,12 +11,14 @@ import Particles from "./components/Particles";
 import SplashScreen from "./components/SplashScreen";
 
 export default function App() {
-  const [page, setPage] = useState("loading");
+  const [page, setPage] = useState(null);
   const [eventState, setEventState] = useState({ status: "waiting" });
   const [showSplash, setShowSplash] = useState(true);
 
 
   useEffect(() => {
+    if (!splashDone) return;
+
     const path = window.location.pathname;
     if (path === "/admin" || path.startsWith("/admin")) {
       setPage("admin");
@@ -35,10 +37,11 @@ export default function App() {
     const progress = getProgress();
     if (progress.finished) { setPage("victory"); return; }
     setPage("waiting"); // WaitingRoom auto-proceeds to game if event active
-  }, []);
+  }, [splashDone]);
 
   // Lightweight poll every 10s
   useEffect(() => {
+    if (!splashDone) return;
     if (page === "admin" || page === "loading" || page === "victory") return;
     const id = setInterval(() => {
       fetchEventState()
@@ -46,9 +49,13 @@ export default function App() {
         .catch(() => {});
     }, 10000);
     return () => clearInterval(id);
-  }, [page]);
+  }, [splashDone,page]);
 
   const nav = (p) => setPage(p);
+
+  if (!splashDone) {
+    return <SplashScreen onDone={() => setSplashDone(true)} />;
+  }
 
   if (page === "loading") {
     return (
