@@ -70,6 +70,7 @@ export default function LandingPage({ onStart }) {
     const iv = setInterval(() => {
       charRef.current++;
       setTyped(line.slice(0, charRef.current));
+      sounds.hover();
       if (charRef.current >= line.length) {
         clearInterval(iv);
         setTimeout(() => {
