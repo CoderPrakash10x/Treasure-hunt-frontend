@@ -8,7 +8,7 @@ import AdminPage from "./pages/AdminPage";
 import { getUser, getProgress, getEventState, saveEventState } from "./utils/storage";
 import { fetchEventState } from "./utils/api";
 import Particles from "./components/Particles";
-import SplashScreen from "./pages/SplashScreen";
+import SplashScreen from "./components/SplashScreen";
 
 export default function App() {
   const [page, setPage] = useState("loading");
