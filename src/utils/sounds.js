@@ -5,6 +5,7 @@ let ctx = null;
 let ambientNode = null;
 let ambientGain = null;
 let ambientPlaying = false;
+let bgMusic = null;
 
 const getCtx = () => {
   if (!ctx) {
@@ -176,73 +177,24 @@ export const sounds = {
 
 // ─── AMBIENT MUSIC ───────────────────────────────────────────────────────
 // Generates a looping dark mystery drone using Web Audio
+
 export const startAmbient = () => {
   const prefs = getAudioPrefs();
   if (prefs.muted || ambientPlaying) return;
-  try {
-    const c = resumeCtx();
-    ambientGain = c.createGain();
-    ambientGain.gain.value = (prefs.volume ?? 0.7) * 0.12;
-    ambientGain.connect(c.destination);
-
-    // Deep drone base
-    const drone1 = c.createOscillator();
-    drone1.type = "sine";
-    drone1.frequency.value = 55; // A1
-    drone1.connect(ambientGain);
-    drone1.start();
-
-    // Fifth harmony
-    const drone2 = c.createOscillator();
-    drone2.type = "sine";
-    drone2.frequency.value = 82.4; // E2
-    const g2 = c.createGain();
-    g2.gain.value = 0.6;
-    drone2.connect(g2); g2.connect(ambientGain);
-    drone2.start();
-
-    // Slow LFO tremolo for mystery feel
-    const lfo = c.createOscillator();
-    lfo.frequency.value = 0.08;
-    const lfoGain = c.createGain();
-    lfoGain.gain.value = 0.3;
-    lfo.connect(lfoGain); lfoGain.connect(ambientGain.gain);
-    lfo.start();
-
-    // High shimmer
-    const shimmer = c.createOscillator();
-    shimmer.type = "sine";
-    shimmer.frequency.value = 440;
-    const shimmerGain = c.createGain();
-    shimmerGain.gain.value = 0.02;
-    const shimmerLfo = c.createOscillator();
-    shimmerLfo.frequency.value = 0.15;
-    const shimmerLfoGain = c.createGain();
-    shimmerLfoGain.gain.value = 0.015;
-    shimmerLfo.connect(shimmerLfoGain); shimmerLfoGain.connect(shimmerGain.gain);
-    shimmer.connect(shimmerGain); shimmerGain.connect(ambientGain);
-    shimmerLfo.start(); shimmer.start();
-
-    ambientNode = { drone1, drone2, lfo, shimmer, shimmerLfo };
-    ambientPlaying = true;
-  } catch {}
+  
+  bgMusic = new Audio('/sound/background.mp3'); // apni file ka path
+  bgMusic.loop = true;
+  bgMusic.volume = (prefs.volume ?? 0.7) * 0.4;
+  bgMusic.play().catch(() => {});
+  ambientPlaying = true;
 };
 
 export const stopAmbient = () => {
-  if (!ambientNode) return;
-  try {
-    const c = getCtx();
-    if (ambientGain) {
-      ambientGain.gain.setTargetAtTime(0, c.currentTime, 0.5);
-      setTimeout(() => {
-        try {
-          Object.values(ambientNode).forEach(n => n.stop?.());
-          ambientGain.disconnect();
-        } catch {}
-        ambientNode = null; ambientGain = null; ambientPlaying = false;
-      }, 1500);
-    }
-  } catch {}
+  if (!bgMusic) return;
+  bgMusic.pause();
+  bgMusic.currentTime = 0;
+  bgMusic = null;
+  ambientPlaying = false;
 };
 
 export const isAmbientPlaying = () => ambientPlaying;
