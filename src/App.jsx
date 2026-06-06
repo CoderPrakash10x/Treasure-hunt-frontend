@@ -11,6 +11,7 @@ import Particles from "./components/Particles";
 import SplashScreen from "./components/SplashScreen";
 
 export default function App() {
+  const [splashDone, setSplashDone] = useState(false);
   const [page, setPage] = useState(null);
   const [eventState, setEventState] = useState({ status: "waiting" });
   const [showSplash, setShowSplash] = useState(true);
@@ -71,7 +72,6 @@ export default function App() {
   return (
 
     <div className="app-root">
-      <SplashScreen onDone={() => setShowSplash(false)} />;
 
       <Particles />
       {page === "landing"   && <LandingPage onStart={() => nav("register")} />}
