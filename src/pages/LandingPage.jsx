@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { sounds, startAmbient, getMuted, setMuted, getSfxMuted, setSfxMuted, getVolume, setVolume } from "../utils/sounds";
 import { getAudioPrefs } from "../utils/storage";
 
@@ -21,6 +21,73 @@ const NARRATIVE = [
   "Are you ready to escape?",
 ];
 
+// ─── Lightweight typing sound (won't conflict with existing sounds util) ──────
+let _landAC = null;
+const getLandAC = () => {
+  if (!_landAC) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    _landAC = new AC();
+  }
+  return _landAC;
+};
+
+function playTypeSound() {
+  try {
+    const prefs = getAudioPrefs();
+    if (prefs.muted || prefs.sfxMuted) return;
+    const c = getLandAC();
+    if (c.state === "suspended") c.resume();
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = "square";
+    o.frequency.value = 460 + Math.random() * 380;
+    o.connect(g); g.connect(c.destination);
+    const vol = (prefs.volume ?? 0.7) * 0.034;
+    g.gain.setValueAtTime(vol, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.046);
+    o.start(); o.stop(c.currentTime + 0.05);
+  } catch {}
+}
+
+// ─── Glitch state for landing page ───────────────────────────────────────────
+function useTextGlitch(active, intensity = 1) {
+  const [state, setState] = useState({ ox: 0, oy: 0, skew: 0, rgb: 0 });
+  const rafRef = useRef(null);
+  const frameRef = useRef(0);
+
+  useEffect(() => {
+    if (!active) {
+      setState({ ox: 0, oy: 0, skew: 0, rgb: 0 });
+      return;
+    }
+    let alive = true;
+    const run = () => {
+      if (!alive) return;
+      frameRef.current++;
+      if (frameRef.current % 2 === 0) {
+        setState({
+          ox: (Math.random() - 0.5) * intensity * 14,
+          oy: (Math.random() - 0.5) * intensity * 5,
+          skew: (Math.random() - 0.5) * intensity * 3,
+          rgb: Math.floor(intensity * 8),
+        });
+      }
+      rafRef.current = requestAnimationFrame(run);
+    };
+    rafRef.current = requestAnimationFrame(run);
+    return () => { alive = false; cancelAnimationFrame(rafRef.current); };
+  }, [active, intensity]);
+
+  const style = active ? {
+    transform: `translate(${state.ox}px, ${state.oy}px) skewX(${state.skew}deg)`,
+  } : {};
+
+  const textShadow = active && state.rgb > 1
+    ? `-${state.rgb}px 0 rgba(255,0,80,0.8), ${state.rgb}px 0 rgba(0,255,180,0.8), 0 0 18px rgba(212,175,55,0.7)`
+    : undefined;
+
+  return { style, textShadow };
+}
+
 export default function LandingPage({ onStart }) {
   const [bootLines, setBootLines] = useState([]);
   const [bootDone, setBootDone] = useState(false);
@@ -29,11 +96,16 @@ export default function LandingPage({ onStart }) {
   const [typed, setTyped] = useState("");
   const [showButton, setShowButton] = useState(false);
   const [glitch, setGlitch] = useState(false);
+  const [glitchIntensity, setGlitchIntensity] = useState(0.5);
   const [showAudioPanel, setShowAudioPanel] = useState(false);
   const [audioPrefs, setAudioPrefs] = useState(getAudioPrefs());
+  const [typingActive, setTypingActive] = useState(false);
   const charRef = useRef(0);
   const lineRef = useRef(0);
-  const bootRef = useRef(0);
+  const typingSoundRef = useRef(null);
+
+  // Glitch hook for logo
+  const logoGlitch = useTextGlitch(glitch, glitchIntensity);
 
   // Boot sequence
   useEffect(() => {
@@ -48,16 +120,23 @@ export default function LandingPage({ onStart }) {
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  // Glitch effect
+  // Glitch effect — randomized intensity
   useEffect(() => {
-    const id = setInterval(() => {
-      setGlitch(true);
-      setTimeout(() => setGlitch(false), 120 + Math.random() * 80);
-    }, 3500 + Math.random() * 2000);
-    return () => clearInterval(id);
+    let tid;
+    const schedule = () => {
+      tid = setTimeout(() => {
+        const intensity = 0.3 + Math.random() * 0.7;
+        setGlitchIntensity(intensity);
+        setGlitch(true);
+        setTimeout(() => setGlitch(false), 100 + Math.random() * 100);
+        schedule();
+      }, 3000 + Math.random() * 2500);
+    };
+    schedule();
+    return () => clearTimeout(tid);
   }, []);
 
-  // Typewriter narrative (after boot)
+  // Typewriter narrative with typing sounds
   useEffect(() => {
     if (!bootDone) return;
     if (lineRef.current >= NARRATIVE.length) {
@@ -67,11 +146,17 @@ export default function LandingPage({ onStart }) {
     const line = NARRATIVE[lineRef.current];
     charRef.current = 0;
     setTyped("");
+    setTypingActive(true);
+
     const iv = setInterval(() => {
       charRef.current++;
+      // Play typing sound for each character
+      playTypeSound();
       setTyped(line.slice(0, charRef.current));
+
       if (charRef.current >= line.length) {
         clearInterval(iv);
+        setTypingActive(false);
         setTimeout(() => {
           setLines((p) => [...p, line]);
           setTyped("");
@@ -80,7 +165,7 @@ export default function LandingPage({ onStart }) {
         }, 500);
       }
     }, 35);
-    return () => clearInterval(iv);
+    return () => { clearInterval(iv); setTypingActive(false); };
   }, [currentLine, bootDone]);
 
   const handleStart = () => {
@@ -96,6 +181,11 @@ export default function LandingPage({ onStart }) {
     if (key === "sfxMuted") setSfxMuted(val);
     if (key === "volume") setVolume(val);
   };
+
+  // Logo text with RGB split when glitching
+  const logoTextShadow = glitch && glitchIntensity > 0.5
+    ? logoGlitch.textShadow
+    : undefined;
 
   return (
     <div className="landing-root">
@@ -132,10 +222,19 @@ export default function LandingPage({ onStart }) {
         )}
       </div>
 
-      {/* Logo */}
-      <div className={`vault-logo ${glitch ? "glitch" : ""}`}>
-        <div className="logo-symbol">⚜</div>
-        <h1 className="logo-title" data-text="IGNITIA NEXUS">IGNITIA NEXUS</h1>
+      {/* Logo — enhanced glitch */}
+      <div
+        className={`vault-logo ${glitch ? "glitch" : ""}`}
+        style={logoGlitch.style}
+      >
+        <div className="logo-symbol" style={{ textShadow: logoTextShadow }}>⚜</div>
+        <h1
+          className="logo-title"
+          data-text="IGNITIA NEXUS"
+          style={{ textShadow: logoTextShadow }}
+        >
+          IGNITIA NEXUS
+        </h1>
         <div className="logo-subtitle">THE SECRET ESCAPE</div>
         <div className="logo-divider" />
       </div>
@@ -158,8 +257,10 @@ export default function LandingPage({ onStart }) {
             </p>
           ))}
           {bootDone && lineRef.current < NARRATIVE.length && (
-            <p className="terminal-line typing">
-              <span className="prompt">▶ </span>{typed}<span className="cursor">█</span>
+            <p className={`terminal-line typing${typingActive ? " typing-active" : ""}`}>
+              <span className="prompt">▶ </span>
+              <span className={typingActive ? "typing-glow" : ""}>{typed}</span>
+              <span className="cursor">█</span>
             </p>
           )}
         </div>

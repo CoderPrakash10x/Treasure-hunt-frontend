@@ -799,3 +799,326 @@ select { color: var(--text); }
   .logo-title { font-size:26px; }
   .vault-layers { flex-wrap:wrap; }
 }
+/* ═══════════════════════════════════════════════════════════════
+   SPLASH SCREEN
+   ═══════════════════════════════════════════════════════════════ */
+
+.spl-root {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', Courier, monospace;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+/* Shatter exit animation */
+.spl-shatter {
+  animation: splShatter 0.65s ease-in forwards;
+}
+@keyframes splShatter {
+  0%   { opacity: 1; transform: scale(1) skewX(0deg); filter: brightness(1); }
+  20%  { transform: scale(1.015) skewX(-1.5deg); filter: brightness(2.5) contrast(1.5); }
+  35%  { transform: scale(0.995) skewX(2deg) translateY(-2px); filter: brightness(0.3); }
+  50%  { transform: scale(1.02) skewX(-0.5deg); filter: brightness(3) hue-rotate(30deg); }
+  65%  { transform: scale(1.05) skewX(1deg) translateY(4px); filter: brightness(0.1); }
+  80%  { transform: scale(0.98); filter: brightness(4); opacity: 0.6; }
+  100% { transform: scale(1.1) translateY(-8px); opacity: 0; filter: brightness(0); }
+}
+
+/* Glitch canvas — sits behind content */
+.spl-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Scanlines overlay */
+.spl-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 0, 0.012) 2px,
+    rgba(0, 255, 0, 0.012) 4px
+  );
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Radial vignette */
+.spl-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.75) 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Floating particles */
+.spl-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+.spl-particle {
+  position: absolute;
+  bottom: -6px;
+  width: 2px;
+  height: 2px;
+  background: #D4AF37;
+  border-radius: 50%;
+  animation: splParticleRise linear infinite;
+}
+@keyframes splParticleRise {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(-100vh) translateX(calc((var(--drift, 1)) * 30px)); opacity: 0; }
+}
+
+/* Content layer */
+.spl-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  padding: 0 20px;
+}
+
+/* Logo wrapper */
+.spl-logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: scale(0.92) translateY(8px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+  will-change: transform, opacity;
+}
+.spl-logo-in {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* Sphere canvas */
+.spl-sphere-canvas {
+  display: block;
+  /* Pulse glow via filter */
+  animation: sphereGlow 2.2s ease-in-out infinite;
+  will-change: filter;
+}
+@keyframes sphereGlow {
+  0%, 100% { filter: drop-shadow(0 0 14px rgba(212,175,55,0.5)); }
+  50%       { filter: drop-shadow(0 0 28px rgba(212,175,55,0.9)) drop-shadow(0 0 50px rgba(212,175,55,0.3)); }
+}
+
+/* Brand name */
+.spl-brand {
+  color: #D4AF37;
+  font-size: clamp(22px, 5vw, 34px);
+  font-weight: 700;
+  letter-spacing: clamp(6px, 2vw, 12px);
+  margin-top: 18px;
+  will-change: transform, text-shadow;
+  transition: transform 0.04s linear;
+}
+.spl-brand-sub {
+  color: #5a4a20;
+  font-size: clamp(10px, 2vw, 13px);
+  letter-spacing: clamp(3px, 1.5vw, 6px);
+  margin-top: 4px;
+  will-change: transform;
+  transition: transform 0.04s linear;
+}
+
+/* Init / typing line */
+.spl-init-line {
+  color: #00ff88;
+  font-size: clamp(11px, 2.5vw, 14px);
+  letter-spacing: 1.5px;
+  margin-top: 28px;
+  min-height: 22px;
+  text-shadow: 0 0 8px rgba(0,255,136,0.5);
+  will-change: transform;
+  transition: transform 0.04s linear;
+  text-align: center;
+}
+.spl-prompt {
+  color: #D4AF37;
+  opacity: 0.7;
+}
+.spl-cur {
+  animation: splBlink 0.6s step-end infinite;
+  color: #00ff88;
+}
+@keyframes splBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* Progress bar section */
+.spl-bar-section {
+  width: min(320px, 85vw);
+  margin-top: 18px;
+}
+.spl-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.spl-bar-label {
+  font-size: 10px;
+  color: #333;
+  letter-spacing: 1px;
+  transition: color 0.2s;
+}
+.spl-bar-label.lit {
+  color: #D4AF37;
+  text-shadow: 0 0 6px rgba(212,175,55,0.6);
+}
+.spl-bar-track {
+  height: 4px;
+  background: #0d0d0d;
+  border: 1px solid #222;
+  border-radius: 2px;
+  overflow: visible;
+  position: relative;
+}
+.spl-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8B6914, #D4AF37, #FFD700);
+  border-radius: 2px;
+  transition: width 0.04s linear;
+  position: relative;
+}
+.spl-bar-glow {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle, rgba(212,175,55,0.9) 0%, transparent 70%);
+  pointer-events: none;
+  transition: left 0.04s linear;
+}
+
+/* Welcome text */
+.spl-welcome {
+  color: #D4AF37;
+  font-size: clamp(16px, 4vw, 24px);
+  font-weight: 700;
+  letter-spacing: clamp(3px, 1.5vw, 6px);
+  margin-top: 22px;
+  text-align: center;
+  animation: splWelcomeIn 0.5s ease forwards;
+  will-change: transform, text-shadow;
+  transition: transform 0.04s linear;
+}
+@keyframes splWelcomeIn {
+  0%   { opacity: 0; letter-spacing: 20px; filter: blur(4px); }
+  60%  { opacity: 0.8; }
+  100% { opacity: 1; filter: blur(0); }
+}
+
+/* Corner decorations */
+.spl-corner {
+  position: absolute;
+  color: #D4AF37;
+  font-size: 16px;
+  opacity: 0.45;
+  z-index: 10;
+  line-height: 1;
+}
+.spl-corner.tl { top: 12px; left: 16px; }
+.spl-corner.tr { top: 12px; right: 16px; }
+.spl-corner.bl { bottom: 12px; left: 16px; }
+.spl-corner.br { bottom: 12px; right: 16px; }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   LANDING PAGE ENHANCEMENTS
+   (Add these to your existing landing page CSS)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Enhanced glitch — RGB split on logo title via data-text pseudo */
+.vault-logo.glitch .logo-title::before,
+.vault-logo.glitch .logo-title::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.vault-logo.glitch .logo-title::before {
+  color: rgba(255, 0, 80, 0.7);
+  animation: rgbLeft 0.12s steps(1) infinite;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+}
+.vault-logo.glitch .logo-title::after {
+  color: rgba(0, 255, 180, 0.7);
+  animation: rgbRight 0.12s steps(1) infinite;
+  clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+}
+@keyframes rgbLeft {
+  0%  { transform: translate(-4px, -2px); }
+  33% { transform: translate(3px, 1px); }
+  66% { transform: translate(-2px, 2px); }
+  100%{ transform: translate(4px, -1px); }
+}
+@keyframes rgbRight {
+  0%  { transform: translate(4px, 2px); }
+  33% { transform: translate(-3px, -1px); }
+  66% { transform: translate(2px, -2px); }
+  100%{ transform: translate(-4px, 1px); }
+}
+
+/* Logo title needs relative positioning for pseudo-elements */
+.logo-title {
+  position: relative;
+  display: inline-block;
+  transition: text-shadow 0.05s, transform 0.04s;
+  will-change: transform, text-shadow;
+}
+
+/* Typing glow effect on active narrative line */
+.typing-glow {
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.6), 0 0 16px rgba(212, 175, 55, 0.3);
+}
+
+/* Cursor pulse when typing is active */
+.typing-active .cursor {
+  animation: cursorPulse 0.45s ease-in-out infinite;
+}
+@keyframes cursorPulse {
+  0%, 100% { opacity: 1; text-shadow: 0 0 6px rgba(212,175,55,0.8); }
+  50%       { opacity: 0.4; text-shadow: none; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE — 320px to 425px
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 425px) {
+  .spl-brand      { letter-spacing: 4px; }
+  .spl-brand-sub  { letter-spacing: 2px; }
+  .spl-welcome    { letter-spacing: 2px; font-size: 15px; }
+  .spl-init-line  { font-size: 11px; letter-spacing: 1px; }
+  .spl-sphere-canvas { width: 130px; height: 130px; }
+}
+
+@media (max-width: 375px) {
+  .spl-bar-section { width: 92vw; }
+}
