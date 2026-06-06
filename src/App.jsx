@@ -8,10 +8,12 @@ import AdminPage from "./pages/AdminPage";
 import { getUser, getProgress, getEventState, saveEventState } from "./utils/storage";
 import { fetchEventState } from "./utils/api";
 import Particles from "./components/Particles";
+import SplashScreen from "./pages/SplashScreen";
 
 export default function App() {
   const [page, setPage] = useState("loading");
   const [eventState, setEventState] = useState({ status: "waiting" });
+  const [showSplash, setShowSplash] = useState(true);
 
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export default function App() {
   return (
 
     <div className="app-root">
+      <SplashScreen onDone={() => setShowSplash(false)} />;
 
       <Particles />
       {page === "landing"   && <LandingPage onStart={() => nav("register")} />}
