@@ -9,6 +9,7 @@ import { getUser, getProgress, getEventState, saveEventState } from "./utils/sto
 import { fetchEventState } from "./utils/api";
 import Particles from "./components/Particles";
 import SplashScreen from "./components/SplashScreen";
+import { Analytics } from "@vercel/analytics/react"
 
 export default function App() {
   const [splashDone, setSplashDone] = useState(false);
