@@ -1122,3 +1122,100 @@ select { color: var(--text); }
 @media (max-width: 375px) {
   .spl-bar-section { width: 92vw; }
 }
+
+/* ── BONUS STAGE ─────────────────────────────────────────────────────────── */
+.bonus-stage {
+  border: 1px solid rgba(255, 50, 50, 0.2) !important;
+  box-shadow: 0 0 60px rgba(255, 30, 30, 0.06), 0 0 120px rgba(212, 175, 55, 0.04);
+  animation: bossAura 3s ease-in-out infinite !important;
+}
+@keyframes bossAura {
+  0%,100% { box-shadow: 0 0 40px rgba(255,30,30,0.06); }
+  50%      { box-shadow: 0 0 80px rgba(255,30,30,0.14), 0 0 40px rgba(212,175,55,0.08); }
+}
+.boss-banner {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  background: rgba(255, 30, 30, 0.08); border: 1px solid rgba(255, 50, 50, 0.3);
+  border-radius: var(--r); padding: 10px 20px; margin-bottom: 20px;
+  animation: bossFlicker 1.5s ease-in-out infinite;
+}
+.boss-banner-text {
+  font-family: var(--font-m); font-size: 13px; letter-spacing: 4px;
+  color: #ff4444; font-weight: 700;
+}
+.boss-banner-glyph { font-size: 18px; }
+@keyframes bossFlicker {
+  0%,100% { opacity: 1; } 50% { opacity: 0.7; }
+}
+.layer-badge-boss {
+  border-color: rgba(255, 50, 50, 0.4) !important;
+  background: rgba(255, 30, 30, 0.06) !important;
+}
+.boss-title {
+  color: #ff6644 !important;
+  text-shadow: 0 0 30px rgba(255, 80, 50, 0.5) !important;
+}
+.question-box-boss {
+  border-left-color: #ff4444 !important;
+  background: rgba(255, 30, 30, 0.04) !important;
+}
+.boss-input:focus {
+  border-color: #ff4444 !important;
+  box-shadow: 0 0 0 3px rgba(255, 50, 50, 0.15) !important;
+}
+.boss-submit-btn {
+  border-color: #ff4444 !important; color: #ff4444 !important;
+}
+.boss-submit-btn:hover:not(:disabled) {
+  background: rgba(255, 50, 50, 0.15) !important;
+  box-shadow: 0 0 20px rgba(255, 50, 50, 0.3) !important;
+}
+
+/* ── BOSS INTRO OVERLAY ──────────────────────────────────────────────────── */
+.boss-intro-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex; align-items: center; justify-content: center;
+  animation: bossIntroIn 0.3s ease forwards;
+}
+@keyframes bossIntroIn { from{opacity:0} to{opacity:1} }
+.boss-intro-content { text-align: center; }
+.boss-glyph-anim {
+  font-size: 80px; color: #D4AF37;
+  text-shadow: 0 0 40px rgba(212,175,55,0.8);
+  animation: bossGlyphPulse 0.6s ease-in-out infinite alternate;
+  display: block; margin-bottom: 24px;
+}
+@keyframes bossGlyphPulse {
+  from { transform: scale(1);   text-shadow: 0 0 20px rgba(212,175,55,0.5); }
+  to   { transform: scale(1.1); text-shadow: 0 0 60px rgba(212,175,55,1);   }
+}
+.boss-warning-text {
+  font-family: var(--font-d); font-size: clamp(20px,4vw,36px);
+  color: #ff4444; letter-spacing: 0.2em;
+  text-shadow: 0 0 30px rgba(255,50,50,0.7);
+  animation: bossFlicker 0.4s ease-in-out infinite;
+}
+.boss-sub-text {
+  font-family: var(--font-m); font-size: 14px;
+  color: var(--text-mid); letter-spacing: 3px; margin-top: 12px;
+}
+
+/* ── HINT COUNTDOWN ──────────────────────────────────────────────────────── */
+.hint-area { margin-top: 16px; }
+.hint-countdown-box {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 14px;
+  background: rgba(212,175,55,0.03); border: 1px solid var(--border);
+  border-radius: var(--r);
+  font-family: var(--font-m); font-size: 12px; color: var(--text-dim);
+}
+.hint-countdown-icon { font-size: 14px; }
+.hint-countdown-text strong { color: var(--gold2); }
+.hint-reveal-btn {
+  padding: 5px 14px; border: 1px solid var(--gold-dim);
+  border-radius: var(--r); font-family: var(--font-m);
+  font-size: 11px; color: var(--gold); cursor: pointer;
+  transition: all var(--tr); background: rgba(212,175,55,0.08);
+}
+.hint-reveal-btn:hover { background: rgba(212,175,55,0.15); border-color: var(--gold); }
