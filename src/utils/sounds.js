@@ -182,7 +182,7 @@ export const startAmbient = () => {
   const prefs = getAudioPrefs();
   if (prefs.muted || ambientPlaying) return;
   
-  bgMusic = new Audio('/sound/background.m4a'); // apni file ka path
+  bgMusic = new Audio('/sound/background.mp3'); // apni file ka path
   bgMusic.loop = true;
   bgMusic.volume = (prefs.volume ?? 0.7) * 0.4;
   bgMusic.play().catch(() => {});
